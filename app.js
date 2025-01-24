@@ -13,8 +13,4 @@ app.use('/api/recipes', recipeRoutes);
 app.use('/api/calendar', calendarRoutes);
 app.use('/api/shopping', shoppingRoutes);
 
-// Start server
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+module.exports = app;
