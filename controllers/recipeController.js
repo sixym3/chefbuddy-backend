@@ -21,7 +21,7 @@ async function scrapeAndAddRecipe(req, res) {
     
     // We'll use cooking_time if returned from summarization or set it manually
     // For now, let's just read from structuredData if it exists
-    const cookingTime = structuredData.cooking_time || null;
+    const cookingTime = null;
     
     // 3. Store in DB (handle potential duplicates for title)
     const query = `

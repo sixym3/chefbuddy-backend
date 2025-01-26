@@ -7,29 +7,45 @@ async function scrapeRecipeData(url) {
     const { data } = await axios.get(url);
     const $ = cheerio.load(data);
     
-    // Basic scraping example; your actual selectors may differ
+    // Get recipe title
     const title = $('h1').text().trim() || 'Untitled Recipe';
     
-    // Collect raw ingredients from the DOM
-    const rawIngredients = [];
-    $('li.ingredient').each((i, el) => {
-      rawIngredients.push($(el).text().trim());
+    // Collect ingredients
+    const ingredients = [];
+    $('[class*="ingredients"]').each((i, el) => {
+      const text = $(el).text().replace(/[\n\t\r]+/g, ' ').replace(/\s+/g, ' ').trim();
+      if (!ingredients.includes(text) && !ingredients.some(ing => ing.includes(text))) {
+        ingredients.push(text);
+      }
     });
     
-    // Collect raw directions
-    const rawDirections = [];
-    $('li.direction').each((i, el) => {
-      rawDirections.push($(el).text().trim());
+    // Collect directions
+    const directions = [];
+    const directionKeywords = ['direction', 'instruction', 'steps', 'method', 'preparation'];
+    const directionSelectors = directionKeywords.map(keyword => `[class*="${keyword}"]`).join(', ');
+    $(directionSelectors).each((i, el) => {
+      const text = $(el).text().replace(/[\n\t\r]+/g, ' ').replace(/\s+/g, ' ').trim();
+      if (!directions.includes(text) && !directions.some(dir => dir.includes(text))) {
+        directions.push(text);
+      }
     });
-    
-    // Possibly collect raw nutrition info
-    const rawNutrition = $('div.nutrition').text().trim();
-    
+
+    // Collect nutrition
+    const nutrition = [];
+    $('[class*="nutrition"]').each((i, el) => {
+      const text = $(el).text().replace(/[\n\t\r]+/g, ' ').replace(/\s+/g, ' ').trim();
+      if (!nutrition.includes(text) && !nutrition.some(nut => nut.includes(text))) {
+        nutrition.push(text);
+      }
+    });
+
     return {
       title,
-      rawIngredients,
-      rawDirections,
-      rawNutrition
+      ingredients,
+      directions,
+      nutrition,
+      //metadata
+      //recipeContainers: recipeContainers.html()
     };
   } catch (err) {
     console.error('Error scraping recipe:', err.message);
