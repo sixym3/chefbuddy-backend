@@ -20,16 +20,16 @@ async function summarizeRecipeData(rawData) {
             apiKey: process.env.OPENAI_API_KEY,
           });
 
-        console.log("ChatGPT Service Called, Raw Data: ", rawData);
+        console.log("ChatGPT Service Called, Raw Data: \n", rawData);
 
         const prompt = `The following data is scraped from the web and might have repeated or inconsistent information. 
         Extract and summarize it into a cohesive JSON object with the following format: 
-        {title :[], ingredients :[], directions :[], nutrition :{"Calories": "xxx","Carbohydrates": "xxx","Protein": "xxx","Fat": "xxx","Saturated Fat": "xxx","Cholesterol": "xxx","Sodium": "xxx","Potassium": "xxx","Fiber": "xxx","Vitamin A": "xxx","Vitamin C": "xxx","Calcium": "xxx","Iron": "xxx"}, cooking_time :[]}. 
+        {title :[], ingredients :[], directions :[], nutrition :{"Calories": "xxx","Carbohydrates": "xxx","Protein": "xxx","Fat": "xxx","Saturated Fat": "xxx","Cholesterol": "xxx","Sodium": "xxx","Potassium": "xxx","Fiber": "xxx","Vitamin A": "xxx","Vitamin C": "xxx","Calcium": "xxx","Iron": "xxx"}, cooking_time : "xxx", prep_time : "xxx"}. 
         If information is missing, use "--" or an empty string appropriately. Return the JSON object only. 
         Here is the input: ${JSON.stringify(rawData)}
         `;
 
-        console.log("PROMPT: ", prompt);
+        console.log("PROMPT: \n", prompt);
 
         const completion = openai.chat.completions.create({
             model: "gpt-4o-mini",
@@ -40,13 +40,12 @@ async function summarizeRecipeData(rawData) {
           });
           
         const result = await completion;
-        console.log("ChatGPT Response: ", result.choices[0].message);
 
         // Extract and return ChatGPT response
         const chatResponse = result.choices[0].message.content;
         // Extract JSON content between ```json and ``` markers
         const jsonContent = chatResponse.replace(/^```json\n|\n```$/g, '').trim();
-        console.log("ChatGPT Response JSON: ", jsonContent);
+        console.log("ChatGPT Response JSON: \n", jsonContent);
         const summarizedData = JSON.parse(jsonContent);
         
         return summarizedData || rawData;

@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS recipes (
     directions TEXT,
     nutrition TEXT,
     source_url VARCHAR(255),
+    cooking_time VARCHAR(255) DEFAULT '--',
+    prep_time VARCHAR(255) DEFAULT '--',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    cooking_time VARCHAR(255) DEFAULT '--'
 );

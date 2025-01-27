@@ -39,11 +39,31 @@ async function scrapeRecipeData(url) {
       }
     });
 
+    // Get cooking time #TODO: Add cooking time information
+    const cookingTime = [];
+    $('[class*="time"]').each((i, el) => {
+      const text = $(el).text().replace(/[\n\t\r]+/g, ' ').replace(/\s+/g, ' ').trim();
+      if (!cookingTime.includes(text) && !cookingTime.some(ct => ct.includes(text))) {
+        cookingTime.push(text);
+      }
+    });
+
+    // Get prep time #TODO: Add prep time information
+    const prepTime = [];
+    $('[class*="prep*time"]').each((i, el) => {
+      const text = $(el).text().replace(/[\n\t\r]+/g, ' ').replace(/\s+/g, ' ').trim();
+      if (!prepTime.includes(text) && !prepTime.some(pt => pt.includes(text))) {
+        prepTime.push(text);
+      }
+    });
+
     return {
       title,
       ingredients,
       directions,
       nutrition,
+      cookingTime,
+      prepTime,
       //metadata
       //recipeContainers: recipeContainers.html()
     };

@@ -13,20 +13,16 @@ async function scrapeAndAddRecipe(req, res) {
   }
   
   try {
-    // 1. Scrape
+    // 1. Scrape #TODO: Add cooking time information
     const rawData = await scrapeRecipeData(url);
     
-    // 2. Summarize (currently a placeholder or real ChatGPT)
+    // 2. Summarize
     const structuredData = await summarizeRecipeData(rawData);
-    
-    // We'll use cooking_time if returned from summarization or set it manually
-    // For now, let's just read from structuredData if it exists
-    const cookingTime = null;
     
     // 3. Store in DB (handle potential duplicates for title)
     const query = `
-      INSERT INTO recipes (title, ingredients, directions, nutrition, source_url, cooking_time)
-      VALUES (?, ?, ?, ?, ?, ?);
+      INSERT INTO recipes (title, ingredients, directions, nutrition, source_url, cooking_time, prep_time)
+      VALUES (?, ?, ?, ?, ?, ?, ?);
     `;
     const params = [
       rawData.title.trim(),
@@ -34,7 +30,8 @@ async function scrapeAndAddRecipe(req, res) {
       JSON.stringify(structuredData.directions),
       JSON.stringify(structuredData.nutrition),
       url,
-      cookingTime
+      JSON.stringify(structuredData.cooking_time),
+      JSON.stringify(structuredData.prep_time),
     ];
     
     await db.query(query, params);
