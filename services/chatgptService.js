@@ -1,13 +1,6 @@
-require('dotenv').config();
 const axios = require('axios');
 const fs = require('fs');
-
-// Configuration for ChatGPT API
-const config = {
-    apiKey: process.env.OPENAI_API_KEY, // Load API key from .env file
-    apiUrl: 'https://api.openai.com/v1/chat/completions',
-    model: 'gpt-4' // Specify the model to use
-};
+const OpenAI = require('openai');
 
 /**
  * Summarizes recipe data using ChatGPT API.
@@ -21,39 +14,40 @@ async function summarizeRecipeData(rawData) {
             console.error("Invalid input: rawData must be a parsed JSON object.");
             return null;
         }
+        
+        // Initialize OpenAI client
+        const openai = new OpenAI({
+            apiKey: process.env.OPENAI_API_KEY,
+          });
 
-        // Prepare ChatGPT prompt
-        const prompt = `The following data is scraped from the web and might have repeated or inconsistent information. Extract and summarize it into a cohesive JSON object with the following parameters: title, ingredients, directions, nutrition, cooking_time. If information is missing, use "--" or an empty string appropriately. Here is the input:
+        console.log("ChatGPT Service Called, Raw Data: ", rawData);
 
-${JSON.stringify(rawData)}
+        const prompt = `The following data is scraped from the web and might have repeated or inconsistent information. 
+        Extract and summarize it into a cohesive JSON object with the following format: 
+        {title :[], ingredients :[], directions :[], nutrition :{"Calories": "xxx","Carbohydrates": "xxx","Protein": "xxx","Fat": "xxx","Saturated Fat": "xxx","Cholesterol": "xxx","Sodium": "xxx","Potassium": "xxx","Fiber": "xxx","Vitamin A": "xxx","Vitamin C": "xxx","Calcium": "xxx","Iron": "xxx"}, cooking_time :[]}. 
+        If information is missing, use "--" or an empty string appropriately. Return the JSON object only. 
+        Here is the input: ${JSON.stringify(rawData)}
         `;
 
-        // API request payload
-        const payload = {
-            model: config.model,
-            messages: [
-                { role: 'system', content: 'You are a helpful assistant for summarizing recipe data.' },
-                { role: 'user', content: prompt }
-            ],
-            temperature: 0.7 // Adjust for creativity
-        };
+        console.log("PROMPT: ", prompt);
 
-        // Send API request
-        const response = await axios.post(config.apiUrl, payload, {
-            headers: {
-                'Authorization': `Bearer ${config.apiKey}`,
-                'Content-Type': 'application/json'
-            }
-        });
+        const completion = openai.chat.completions.create({
+            model: "gpt-4o-mini",
+            store: true,
+            messages: [
+              {"role": "user", "content": prompt},
+            ],
+          });
+          
+        const result = await completion;
+        console.log("ChatGPT Response: ", result.choices[0].message);
 
         // Extract and return ChatGPT response
-        const chatResponse = response.data.choices[0]?.message?.content;
-        const summarizedData = JSON.parse(chatResponse);
-
-        // Log the results
-        console.log("Summarized Data:", summarizedData);
-        
-        
+        const chatResponse = result.choices[0].message.content;
+        // Extract JSON content between ```json and ``` markers
+        const jsonContent = chatResponse.replace(/^```json\n|\n```$/g, '').trim();
+        console.log("ChatGPT Response JSON: ", jsonContent);
+        const summarizedData = JSON.parse(jsonContent);
         
         return summarizedData || rawData;
 
