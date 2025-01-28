@@ -8,6 +8,12 @@ const shoppingRoutes = require('./routes/shoppingRoutes');
 const app = express();
 app.use(express.json());
 
+const cors = require('cors');
+app.use(cors({
+    origin: 'http://localhost:5173',
+}));
+//app.use(cors());
+
 // Register routes
 app.use('/api/recipes', recipeRoutes);
 app.use('/api/calendar', calendarRoutes);
